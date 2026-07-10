@@ -342,6 +342,42 @@ body {
   cursor: pointer;
   margin-top: 16px;
 }
+
+/* === 响应式 === */
+@media (max-width: 480px) {
+  .game-title {
+    font-size: 26px;
+    letter-spacing: 2px;
+  }
+
+  .board {
+    gap: 6px;
+  }
+
+  .card-front {
+    font-size: 22px;
+  }
+
+  .card-back {
+    font-size: 28px;
+  }
+
+  .diff-btn {
+    padding: 6px 18px;
+    font-size: 14px;
+  }
+
+  .board.cols-6 {
+    gap: 4px;
+  }
+}
+
+/* 大屏适配：限制棋盘宽度 */
+@media (min-width: 600px) {
+  .board {
+    max-width: 480px;
+  }
+}
 </style>
 </head>
 <body>
@@ -457,6 +493,8 @@ function renderBoard() {
 
 // === 新游戏 ===
 function newGame() {
+  // 确保通关弹窗关闭
+  document.getElementById('win-overlay').classList.remove('active');
   GAME.cards = createCards();
   GAME.firstCard = null;
   GAME.secondCard = null;
