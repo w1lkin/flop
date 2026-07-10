@@ -563,6 +563,23 @@ function checkWin() {
 // === 暴露 newGame 到全局，供按钮调用 ===
 window.newGame = newGame;
 
+// === 难度切换 ===
+diffBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const diff = btn.dataset.diff;
+    if (diff === GAME.difficulty) return;
+
+    // 更新 UI
+    diffBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // 更新状态并重开
+    GAME.difficulty = diff;
+    document.getElementById('win-overlay').classList.remove('active');
+    newGame();
+  });
+});
+
 // === 按钮事件绑定 ===
 document.getElementById('btn-restart').addEventListener('click', () => {
   // 关闭通关弹窗（如果打开着）
