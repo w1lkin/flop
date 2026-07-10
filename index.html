@@ -464,15 +464,114 @@ function newGame() {
   renderBoard();
 }
 
-// === 翻牌事件处理（占位，任务 4 填充） ===
+// === 翻牌事件处理 ===
 function handleCardClick(index, cardEl) {
-  // 任务 4 实现
+  const card = GAME.cards[index];
+
+  // 忽略：已匹配、已翻开、正在锁定中
+  if (card.matched || card.flipped || GAME.isLocked) return;
+  // 忽略：点击同一张牌
+  if (GAME.firstCard === index) return;
+
+  // 翻开当前牌
+  card.flipped = true;
+  cardEl.classList.add('flipped');
+
+  if (GAME.firstCard === null) {
+    // 第一张牌
+    GAME.firstCard = index;
+  } else {
+    // 第二张牌
+    GAME.secondCard = index;
+    GAME.isLocked = true;
+
+    checkMatch();
+  }
 }
 
-// === 临时启动代码 ===
+// === 检查匹配 ===
+function checkMatch() {
+  const first = GAME.cards[GAME.firstCard];
+  const second = GAME.cards[GAME.secondCard];
+
+  if (first.emoji === second.emoji) {
+    // 匹配成功
+    onMatchSuccess();
+  } else {
+    // 匹配失败
+    onMatchFail();
+  }
+}
+
+// === 匹配成功 ===
+function onMatchSuccess() {
+  const firstIdx = GAME.firstCard;
+  const secondIdx = GAME.secondCard;
+  const firstEl = document.querySelector(`.card[data-index="${firstIdx}"]`);
+  const secondEl = document.querySelector(`.card[data-index="${secondIdx}"]`);
+
+  GAME.cards[firstIdx].matched = true;
+  GAME.cards[secondIdx].matched = true;
+
+  // 高亮动画
+  firstEl.classList.add('match-highlight');
+  secondEl.classList.add('match-highlight');
+
+  // 动画结束后标记为 matched
+  setTimeout(() => {
+    firstEl.classList.add('matched');
+    secondEl.classList.add('matched');
+    firstEl.classList.remove('match-highlight');
+    secondEl.classList.remove('match-highlight');
+    resetSelection();
+    checkWin();
+  }, 600);
+}
+
+// === 匹配失败 ===
+function onMatchFail() {
+  const firstIdx = GAME.firstCard;
+  const secondIdx = GAME.secondCard;
+  const firstEl = document.querySelector(`.card[data-index="${firstIdx}"]`);
+  const secondEl = document.querySelector(`.card[data-index="${secondIdx}"]`);
+
+  firstEl.classList.add('mismatch');
+  secondEl.classList.add('mismatch');
+
+  // 0.6s 后翻回
+  setTimeout(() => {
+    GAME.cards[firstIdx].flipped = false;
+    GAME.cards[secondIdx].flipped = false;
+    firstEl.classList.remove('flipped', 'mismatch');
+    secondEl.classList.remove('flipped', 'mismatch');
+    resetSelection();
+  }, 600);
+}
+
+// === 重置选牌 ===
+function resetSelection() {
+  GAME.firstCard = null;
+  GAME.secondCard = null;
+  GAME.isLocked = false;
+}
+
+// === 检查是否通关（占位） ===
+function checkWin() {
+  // 任务 6 实现
+}
+
+// === 暴露 newGame 到全局，供按钮调用 ===
+window.newGame = newGame;
+
+// === 按钮事件绑定 ===
+document.getElementById('btn-restart').addEventListener('click', () => {
+  // 关闭通关弹窗（如果打开着）
+  document.getElementById('win-overlay').classList.remove('active');
+  newGame();
+});
+
+// === 启动游戏 ===
 newGame();
-console.log('卡片数组:', GAME.cards);
-console.log('棋盘列数:', DIFFICULTY[GAME.difficulty].cols);
 </script>
 </body>
 </html>
