@@ -574,6 +574,122 @@ function showWin() {
   document.getElementById('win-overlay').classList.add('active');
 }
 
+// === 分享卡片绘制 ===
+
+// 圆角矩形路径辅助
+function rr(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+function generateShareCard() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1200;
+  canvas.height = 1600;
+  const ctx = canvas.getContext('2d');
+  const W = 1200, H = 1600;
+
+  // === 日系清新主题色 ===
+  const theme = {
+    bg: '#E8F5E9',
+    bgGradTop: '#E8F5E9',
+    bgGradMid: '#FFF9C4',
+    bgGradBot: '#FFFDE7',
+    cardBg: '#FFF',
+    accent: '#81C784',
+    accentLight: '#A5D6A7',
+    accentShadow: 'rgba(0,0,0,0.08)',
+    textTitle: '#81C784',
+    textSub: '#999',
+    textFeature: '#777',
+    textHint: '#AAA',
+    dividerColor: '#A5D6A7',
+  };
+
+  const config = DIFFICULTY[GAME.difficulty];
+
+  // 背景渐变
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, theme.bgGradTop);
+  g.addColorStop(0.4, theme.bgGradMid);
+  g.addColorStop(1, theme.bgGradBot);
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+
+  // 装饰圆
+  ctx.globalAlpha = 0.12;
+  [
+    { x: 160, y: 360, r: 200, f: theme.accent },
+    { x: 960, y: 280, r: 140, f: theme.accentLight },
+    { x: 1040, y: 1120, r: 260, f: '#FFE082' },
+    { x: 200, y: 1240, r: 120, f: theme.accent },
+    { x: 600, y: 200, r: 90, f: theme.accentLight },
+  ].forEach(d => {
+    ctx.fillStyle = d.f;
+    ctx.beginPath();
+    ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+
+  // 白色内容卡片
+  ctx.fillStyle = theme.cardBg;
+  ctx.shadowColor = theme.accentShadow;
+  ctx.shadowBlur = 80;
+  ctx.shadowOffsetY = 12;
+  rr(ctx, 90, 240, W - 180, H - 600, 56);
+  ctx.fill();
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetY = 0;
+
+  // 标题
+  ctx.fillStyle = theme.textTitle;
+  ctx.font = "bold 88px -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif";
+  ctx.textAlign = 'center';
+  ctx.fillText('翻牌消消乐', W / 2, 410);
+
+  // Emoji 行
+  ctx.font = '80px sans-serif';
+  ctx.fillText('🍎 🍊 🌸 ⭐ 🐶 🦊 🍀', W / 2, 550);
+
+  // 副标题
+  ctx.fillStyle = theme.textSub;
+  ctx.font = "42px -apple-system, 'PingFang SC', sans-serif";
+  ctx.fillText('日系清新记忆配对小游戏', W / 2, 660);
+
+  // 虚线分割线
+  ctx.strokeStyle = theme.dividerColor;
+  ctx.lineWidth = 3;
+  ctx.setLineDash([16, 12]);
+  ctx.beginPath();
+  ctx.moveTo(190, 740);
+  ctx.lineTo(W - 190, 740);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 特性列表
+  ctx.fillStyle = theme.textFeature;
+  ctx.font = "40px -apple-system, 'PingFang SC', sans-serif";
+  const features = [
+    `🎯 难度：${config.label}`,
+    `🃏 消除：${config.pairs} 对`,
+    `🌸 日系清新风格`,
+  ];
+  features.forEach((f, i) => ctx.fillText(f, W / 2, 840 + i * 90));
+
+  return canvas;
+}
+
 // === 暴露 newGame 到全局，供按钮调用 ===
 window.newGame = newGame;
 
@@ -609,6 +725,72 @@ document.getElementById('btn-replay').addEventListener('click', () => {
 
 // === 启动游戏 ===
 newGame();
+
+// === 分享功能 ===
+
+function drawQRAndShow(canvas) {
+  const ctx = canvas.getContext('2d');
+  const W = 1200, H = 1600;
+  const themeAccent = '#81C784';
+
+  const qr = new Image();
+  qr.crossOrigin = 'anonymous';
+  qr.onload = () => {
+    const qs = 260, qx = (W - qs) / 2, qy = H - 380;
+    ctx.fillStyle = '#FFF';
+    rr(ctx, qx - 24, qy - 24, qs + 48, qs + 48, 32);
+    ctx.fill();
+    ctx.strokeStyle = themeAccent;
+    ctx.lineWidth = 3;
+    rr(ctx, qx - 24, qy - 24, qs + 48, qs + 48, 32);
+    ctx.stroke();
+    ctx.drawImage(qr, qx, qy, qs, qs);
+
+    // 底部提示
+    ctx.fillStyle = '#AAA';
+    ctx.font = "28px -apple-system, 'PingFang SC', sans-serif";
+    ctx.fillText('扫码或长按识别 · 和朋友一起玩', W / 2, H - 48);
+
+    showShareOverlay(canvas);
+  };
+  qr.onerror = () => showShareOverlay(canvas);
+  qr.src = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data='
+    + encodeURIComponent(SHARE_URL || window.location.href)
+    + '&margin=8';
+}
+
+function shareGame() {
+  // 先关闭通关弹窗
+  document.getElementById('win-overlay').classList.remove('active');
+
+  const canvas = generateShareCard();
+  drawQRAndShow(canvas);
+}
+
+function showShareOverlay(canvas) {
+  const img = document.getElementById('share-card-img');
+  if (img) img.src = canvas.toDataURL('image/png');
+  const overlay = document.getElementById('share-overlay');
+  if (overlay) {
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function hideShareCard() {
+  const overlay = document.getElementById('share-overlay');
+  if (overlay) {
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+}
+
+// === 分享遮罩事件绑定 ===
+document.getElementById('btn-share').addEventListener('click', shareGame);
+document.getElementById('share-close').addEventListener('click', hideShareCard);
+document.getElementById('share-overlay').addEventListener('click', function(e) {
+  if (e.target === this) hideShareCard();
+});
 </script>
 </body>
 </html>
