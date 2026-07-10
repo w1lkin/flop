@@ -304,7 +304,7 @@ body {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.7);
   z-index: 200;
   flex-direction: column;
   align-items: center;
@@ -430,6 +430,9 @@ const EMOJI_POOL = [
 ];
 
 // === 游戏状态 ===
+let matchTimeoutId = null;
+let winTimeoutId = null;
+
 const GAME = {
   difficulty: 'normal',
   cards: [],       // { emoji: string, flipped: boolean, matched: boolean }
@@ -493,8 +496,13 @@ function renderBoard() {
 
 // === 新游戏 ===
 function newGame() {
-  // 确保通关弹窗关闭
+  // 清除进行中的超时回调，防止竞态条件
+  if (matchTimeoutId) { clearTimeout(matchTimeoutId); matchTimeoutId = null; }
+  if (winTimeoutId) { clearTimeout(winTimeoutId); winTimeoutId = null; }
+  // 确保弹窗和遮罩关闭
   document.getElementById('win-overlay').classList.remove('active');
+  document.getElementById('share-overlay').classList.remove('active');
+  document.body.style.overflow = '';
   GAME.cards = createCards();
   GAME.firstCard = null;
   GAME.secondCard = null;
@@ -556,7 +564,7 @@ function onMatchSuccess() {
   secondEl.classList.add('match-highlight');
 
   // 动画结束后标记为 matched
-  setTimeout(() => {
+  matchTimeoutId = setTimeout(() => {
     firstEl.classList.add('matched');
     secondEl.classList.add('matched');
     firstEl.classList.remove('match-highlight');
@@ -577,7 +585,7 @@ function onMatchFail() {
   secondEl.classList.add('mismatch');
 
   // 0.6s 后翻回
-  setTimeout(() => {
+  matchTimeoutId = setTimeout(() => {
     GAME.cards[firstIdx].flipped = false;
     GAME.cards[secondIdx].flipped = false;
     firstEl.classList.remove('flipped', 'mismatch');
@@ -599,7 +607,7 @@ function checkWin() {
   if (!allMatched) return;
 
   // 延迟弹出，让最后两张牌的消除动画播完
-  setTimeout(() => {
+  winTimeoutId = setTimeout(() => {
     showWin();
   }, 400);
 }
@@ -734,6 +742,7 @@ window.newGame = newGame;
 // === 难度切换 ===
 diffBtns.forEach(btn => {
   btn.addEventListener('click', () => {
+    if (GAME.isLocked) return;
     const diff = btn.dataset.diff;
     if (diff === GAME.difficulty) return;
 
@@ -750,6 +759,7 @@ diffBtns.forEach(btn => {
 
 // === 按钮事件绑定 ===
 document.getElementById('btn-restart').addEventListener('click', () => {
+  if (GAME.isLocked) return;
   // 关闭通关弹窗（如果打开着）
   document.getElementById('win-overlay').classList.remove('active');
   newGame();
@@ -774,7 +784,7 @@ function drawQRAndShow(canvas) {
   const qr = new Image();
   qr.crossOrigin = 'anonymous';
   qr.onload = () => {
-    const qs = 260, qx = (W - qs) / 2, qy = H - 380;
+    const qs = 260, qx = W - qs - 60, qy = H - 380;
     ctx.fillStyle = '#FFF';
     rr(ctx, qx - 24, qy - 24, qs + 48, qs + 48, 32);
     ctx.fill();
