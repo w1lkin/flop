@@ -378,23 +378,101 @@ body {
 </div>
 
 <script>
-// === 临时测试：渲染静态卡片 ===
-(function testCards() {
-  const board = document.getElementById('board');
-  const testEmojis = ['🍎', '🍊', '🌸', '⭐'];
-  board.innerHTML = '';
-  testEmojis.forEach(emoji => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
+// === 配置 ===
+const SHARE_URL = ''; // 部署后填写实际 URL
+
+const DIFFICULTY = {
+  easy:   { label: '简单', cols: 4, rows: 4, pairs: 8 },
+  normal: { label: '普通', cols: 6, rows: 4, pairs: 12 },
+  hard:   { label: '困难', cols: 6, rows: 6, pairs: 18 },
+};
+
+const EMOJI_POOL = [
+  '🍎', '🍊', '🍋', '🍇', '🍓', '🌸', '🌻', '🍀',
+  '🐶', '🐱', '🐰', '🦊', '🐼', '🐨', '🐸', '🦋',
+  '🐝', '🌈', '⭐', '🔥', '🎵', '🍕', '🎸', '🚀',
+];
+
+// === 游戏状态 ===
+const GAME = {
+  difficulty: 'normal',
+  cards: [],       // { emoji: string, flipped: boolean, matched: boolean }
+  firstCard: null, // 索引
+  secondCard: null,
+  isLocked: false,
+};
+
+// === DOM 引用 ===
+const boardEl = document.getElementById('board');
+const diffBtns = document.querySelectorAll('.diff-btn');
+
+// === 工具函数：Fisher-Yates 洗牌 ===
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// === 创建卡片数组 ===
+function createCards() {
+  const config = DIFFICULTY[GAME.difficulty];
+  // 从 emoji 池随机选取所需配对数
+  const picked = shuffle(EMOJI_POOL).slice(0, config.pairs);
+  // 每对两个，打乱顺序
+  const doubled = shuffle([...picked, ...picked]);
+  return doubled.map(emoji => ({
+    emoji,
+    flipped: false,
+    matched: false,
+  }));
+}
+
+// === 渲染棋盘 ===
+function renderBoard() {
+  const config = DIFFICULTY[GAME.difficulty];
+  boardEl.className = `board cols-${config.cols}`;
+  boardEl.innerHTML = '';
+
+  GAME.cards.forEach((card, index) => {
+    const cardEl = document.createElement('div');
+    cardEl.className = 'card';
+    cardEl.dataset.index = index;
+    if (card.flipped) cardEl.classList.add('flipped');
+    if (card.matched) cardEl.classList.add('matched');
+
+    cardEl.innerHTML = `
       <div class="card-inner">
         <div class="card-front">?</div>
-        <div class="card-back">${emoji}</div>
-      </div>`;
-    card.addEventListener('click', () => card.classList.toggle('flipped'));
-    board.appendChild(card);
+        <div class="card-back">${card.emoji}</div>
+      </div>
+    `;
+
+    cardEl.addEventListener('click', () => handleCardClick(index, cardEl));
+    boardEl.appendChild(cardEl);
   });
-})();
+}
+
+// === 新游戏 ===
+function newGame() {
+  GAME.cards = createCards();
+  GAME.firstCard = null;
+  GAME.secondCard = null;
+  GAME.isLocked = false;
+  renderBoard();
+}
+
+// === 翻牌事件处理（占位，任务 4 填充） ===
+function handleCardClick(index, cardEl) {
+  // 任务 4 实现
+}
+
+// === 临时启动代码 ===
+newGame();
+console.log('卡片数组:', GAME.cards);
+console.log('棋盘列数:', DIFFICULTY[GAME.difficulty].cols);
 </script>
 </body>
 </html>
