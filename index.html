@@ -555,9 +555,23 @@ function resetSelection() {
   GAME.isLocked = false;
 }
 
-// === 检查是否通关（占位） ===
+// === 检查是否通关 ===
 function checkWin() {
-  // 任务 6 实现
+  const allMatched = GAME.cards.every(card => card.matched);
+  if (!allMatched) return;
+
+  // 延迟弹出，让最后两张牌的消除动画播完
+  setTimeout(() => {
+    showWin();
+  }, 400);
+}
+
+// === 显示通关弹窗 ===
+function showWin() {
+  const config = DIFFICULTY[GAME.difficulty];
+  document.getElementById('win-subtitle').textContent =
+    `你成功消除了全部 ${config.pairs} 对卡片！`;
+  document.getElementById('win-overlay').classList.add('active');
 }
 
 // === 暴露 newGame 到全局，供按钮调用 ===
@@ -583,6 +597,12 @@ diffBtns.forEach(btn => {
 // === 按钮事件绑定 ===
 document.getElementById('btn-restart').addEventListener('click', () => {
   // 关闭通关弹窗（如果打开着）
+  document.getElementById('win-overlay').classList.remove('active');
+  newGame();
+});
+
+// === 通关弹窗按钮 ===
+document.getElementById('btn-replay').addEventListener('click', () => {
   document.getElementById('win-overlay').classList.remove('active');
   newGame();
 });
