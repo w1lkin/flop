@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>翻牌消消乐</title>
+<style>
+/* === CSS 变量：日系清新主题 === */
+:root {
+  --primary: #81C784;
+  --primary-light: #A5D6A7;
+  --primary-dark: #66BB6A;
+  --bg-start: #e8f5e9;
+  --bg-end: #fafafa;
+  --card-shadow: rgba(0, 0, 0, 0.08);
+  --text-main: #333;
+  --text-sub: #888;
+  --white: #fff;
+}
+
+/* === 基础重置 === */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+  background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px 16px 40px;
+  color: var(--text-main);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* === 主容器 === */
+.game-container {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+/* === 标题 === */
+.game-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  letter-spacing: 4px;
+  margin-top: 12px;
+}
+
+/* === 难度选择 === */
+.difficulty-bar {
+  display: flex;
+  gap: 12px;
+}
+
+.diff-btn {
+  padding: 8px 24px;
+  border: 2px solid var(--primary-light);
+  background: var(--white);
+  color: var(--primary);
+  border-radius: 24px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.diff-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(129, 199, 132, 0.2);
+}
+
+.diff-btn.active {
+  background: var(--primary);
+  color: var(--white);
+  border-color: var(--primary);
+}
+
+/* === 棋盘 === */
+.board {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  max-width: 480px;
+  perspective: 800px;
+}
+
+/* 默认 6 列，JS 动态覆盖 */
+.board.cols-4 { grid-template-columns: repeat(4, 1fr); }
+.board.cols-6 { grid-template-columns: repeat(6, 1fr); }
+
+/* === 底部按钮 === */
+.btn-restart {
+  padding: 12px 36px;
+  border: 1.5px dashed var(--primary-light);
+  background: transparent;
+  color: var(--primary);
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.btn-restart:hover {
+  border-color: var(--primary);
+  color: var(--primary-dark);
+  transform: translateY(-2px);
+}
+
+.btn-restart:active {
+  transform: scale(0.96);
+}
+
+/* === 通关弹窗 === */
+.win-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+
+.win-overlay.active {
+  display: flex;
+}
+
+.win-card {
+  background: var(--white);
+  border-radius: 24px;
+  padding: 40px 32px 32px;
+  text-align: center;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+  max-width: 340px;
+  width: 90%;
+  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.win-emoji {
+  font-size: 56px;
+  margin-bottom: 12px;
+}
+
+.win-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 8px;
+}
+
+.win-subtitle {
+  font-size: 15px;
+  color: var(--text-sub);
+  margin-bottom: 24px;
+}
+
+/* === 分享按钮 === */
+.btn-share {
+  background: none;
+  color: var(--primary);
+  border: 1.5px dashed var(--primary-light);
+  padding: 12px 28px;
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.btn-share:hover {
+  border-color: var(--primary);
+  color: var(--primary-dark);
+}
+
+.btn-share:active {
+  transform: scale(0.96);
+}
+
+.btn-replay {
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  padding: 12px 28px;
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.btn-replay:active {
+  transform: scale(0.96);
+}
+
+/* === 分享遮罩 === */
+.share-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 200;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.share-overlay.active {
+  display: flex;
+}
+
+.share-card-img {
+  max-width: 90vw;
+  max-height: 70vh;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  object-fit: contain;
+}
+
+.share-hint {
+  color: #ccc;
+  font-size: 14px;
+  margin-top: 16px;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.share-close {
+  color: #ccc;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 10px 32px;
+  border-radius: 24px;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 16px;
+}
+</style>
+</head>
+<body>
+<div class="game-container">
+  <h1 class="game-title">🍀 翻牌消消乐</h1>
+
+  <div class="difficulty-bar" id="difficulty-bar">
+    <button class="diff-btn" data-diff="easy">简单</button>
+    <button class="diff-btn active" data-diff="normal">普通</button>
+    <button class="diff-btn" data-diff="hard">困难</button>
+  </div>
+
+  <div class="board cols-6" id="board"></div>
+
+  <button class="btn-restart" id="btn-restart">🔄 重新开始</button>
+</div>
+
+<!-- 通关弹窗 -->
+<div class="win-overlay" id="win-overlay">
+  <div class="win-card">
+    <div class="win-emoji">🎉</div>
+    <div class="win-title">恭喜通关！</div>
+    <div class="win-subtitle" id="win-subtitle">你成功消除了所有卡片</div>
+    <button class="btn-share" id="btn-share">📤 分享给朋友</button>
+    <button class="btn-replay" id="btn-replay">🔄 再来一局</button>
+  </div>
+</div>
+
+<!-- 分享卡片遮罩 -->
+<div class="share-overlay" id="share-overlay">
+  <img class="share-card-img" id="share-card-img" src="" alt="分享卡片">
+  <p class="share-hint">长按图片保存，发到微信群</p>
+  <button class="share-close" id="share-close">关闭</button>
+</div>
+
+<script>
+// JS 将在后续任务中填充
+</script>
+</body>
+</html>
