@@ -86,6 +86,32 @@ body {
   border-color: var(--primary);
 }
 
+/* === 状态栏 === */
+.stats-bar {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  padding: 0;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  color: var(--text-sub);
+}
+
+.stat-icon {
+  font-size: 18px;
+}
+
+.stat-value {
+  font-weight: 600;
+  color: var(--primary-dark);
+  min-width: 56px;
+}
+
 /* === 棋盘 === */
 .board {
   display: grid;
@@ -119,6 +145,29 @@ body {
 }
 
 .btn-restart:active {
+  transform: scale(0.96);
+}
+
+/* === 历史记录按钮 === */
+.btn-history {
+  padding: 12px 36px;
+  border: 1.5px dashed var(--primary-light);
+  background: transparent;
+  color: var(--primary);
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.btn-history:hover {
+  border-color: var(--primary);
+  color: var(--primary-dark);
+  transform: translateY(-2px);
+}
+
+.btn-history:active {
   transform: scale(0.96);
 }
 
@@ -168,7 +217,67 @@ body {
 .win-subtitle {
   font-size: 15px;
   color: var(--text-sub);
-  margin-bottom: 24px;
+  margin-bottom: 8px;
+}
+
+/* === 通关统计 === */
+.win-stats {
+  font-size: 18px;
+  color: var(--primary-dark);
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+/* === 分享开关 === */
+.share-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-sub);
+  user-select: none;
+}
+
+.share-toggle input {
+  display: none;
+}
+
+.toggle-slider {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: #ddd;
+  border-radius: 12px;
+  transition: background 0.3s;
+  flex-shrink: 0;
+}
+
+.toggle-slider::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: var(--white);
+  border-radius: 50%;
+  transition: transform 0.3s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.share-toggle input:checked + .toggle-slider {
+  background: var(--primary);
+}
+
+.share-toggle input:checked + .toggle-slider::after {
+  transform: translateX(20px);
+}
+
+.toggle-label {
+  flex-shrink: 0;
 }
 
 /* === 分享按钮 === */
@@ -343,6 +452,155 @@ body {
   margin-top: 16px;
 }
 
+/* === 历史记录弹窗 === */
+.history-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 150;
+  align-items: center;
+  justify-content: center;
+}
+
+.history-overlay.active {
+  display: flex;
+}
+
+.history-panel {
+  background: var(--white);
+  border-radius: 24px;
+  padding: 32px 28px 24px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+  max-width: 380px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.history-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.history-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1.5px dashed var(--primary-light);
+}
+
+/* === 最佳记录行 === */
+.best-records {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.best-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #f9fdf9;
+  border-radius: 12px;
+}
+
+.best-diff {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.best-stat {
+  font-size: 13px;
+  color: var(--text-sub);
+}
+
+/* === 历史列表 === */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #fafafa;
+  border-radius: 12px;
+  font-size: 14px;
+  gap: 8px;
+}
+
+.history-item-diff {
+  font-weight: 600;
+  color: var(--text-main);
+  min-width: 36px;
+}
+
+.history-item-stats {
+  color: var(--text-sub);
+  font-size: 13px;
+  flex: 1;
+  text-align: left;
+}
+
+.history-item-date {
+  color: #bbb;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.history-item.record {
+  background: #f1f8e9;
+  border: 1px solid var(--primary-light);
+}
+
+.record-badge {
+  font-size: 11px;
+  background: var(--primary);
+  color: var(--white);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.history-empty {
+  color: var(--text-sub);
+  text-align: center;
+  font-size: 14px;
+  padding: 20px 0;
+}
+
+.history-close {
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  padding: 10px 32px;
+  border-radius: 24px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s;
+}
+
+.history-close:active {
+  transform: scale(0.96);
+}
+
 /* === 响应式 === */
 @media (max-width: 480px) {
   .game-title {
@@ -390,9 +648,21 @@ body {
     <button class="diff-btn" data-diff="hard">困难</button>
   </div>
 
+  <div class="stats-bar" id="stats-bar">
+    <div class="stat-item">
+      <span class="stat-icon">⏱️</span>
+      <span class="stat-value" id="stat-time">00:00</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-icon">👣</span>
+      <span class="stat-value" id="stat-steps">0步</span>
+    </div>
+  </div>
+
   <div class="board cols-6" id="board"></div>
 
   <button class="btn-restart" id="btn-restart">🔄 重新开始</button>
+  <button class="btn-history" id="btn-history">🏆 历史记录</button>
 </div>
 
 <!-- 通关弹窗 -->
@@ -401,6 +671,12 @@ body {
     <div class="win-emoji">🎉</div>
     <div class="win-title">恭喜通关！</div>
     <div class="win-subtitle" id="win-subtitle">你成功消除了所有卡片</div>
+    <div class="win-stats" id="win-stats"></div>
+    <label class="share-toggle">
+      <input type="checkbox" id="share-hide-stats">
+      <span class="toggle-slider"></span>
+      <span class="toggle-label">分享中隐藏用时和步数</span>
+    </label>
     <button class="btn-share" id="btn-share">📤 分享给朋友</button>
     <button class="btn-replay" id="btn-replay">🔄 再来一局</button>
   </div>
@@ -413,9 +689,21 @@ body {
   <button class="share-close" id="share-close">关闭</button>
 </div>
 
+<!-- 历史记录弹窗 -->
+<div class="history-overlay" id="history-overlay">
+  <div class="history-panel">
+    <div class="history-title">🏆 历史记录</div>
+    <div class="history-section-title">最佳记录</div>
+    <div class="best-records" id="best-records"></div>
+    <div class="history-section-title">最近游戏</div>
+    <div class="history-list" id="history-list"></div>
+    <button class="history-close" id="history-close">关闭</button>
+  </div>
+</div>
+
 <script>
 // === 配置 ===
-const SHARE_URL = ''; // 部署后填写实际 URL
+const SHARE_URL = 'https://flop-39t.pages.dev/'; // 部署后填写实际 URL
 
 const DIFFICULTY = {
   easy:   { label: '简单', cols: 4, rows: 4, pairs: 8 },
@@ -440,6 +728,130 @@ const GAME = {
   secondCard: null,
   isLocked: false,
 };
+
+// === 计时与步数 ===
+let timerInterval = null;
+let timerStartTime = null;   // 计时器启动时的时间戳
+let timerAccumulated = 0;    // 已累积的秒数
+let totalSteps = 0;          // 总翻牌尝试次数
+
+function updateStatsDisplay() {
+  const elapsed = getElapsedSeconds();
+  const mins = Math.floor(elapsed / 60);
+  const secs = elapsed % 60;
+  document.getElementById('stat-time').textContent =
+    String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+  document.getElementById('stat-steps').textContent = totalSteps + '步';
+}
+
+function getElapsedSeconds() {
+  return timerAccumulated + (timerStartTime ? Math.floor((Date.now() - timerStartTime) / 1000) : 0);
+}
+
+function startTimer() {
+  if (timerInterval) return;
+  timerStartTime = Date.now();
+  timerInterval = setInterval(updateStatsDisplay, 200);
+}
+
+function stopTimer() {
+  if (!timerInterval) return;
+  timerAccumulated += Math.floor((Date.now() - timerStartTime) / 1000);
+  timerStartTime = null;
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+function resetTimerAndSteps() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  timerStartTime = null;
+  timerAccumulated = 0;
+  totalSteps = 0;
+  updateStatsDisplay();
+}
+
+// === 本地存储：最佳记录与历史 ===
+const STORAGE_BEST = 'flop_best';
+const STORAGE_HISTORY = 'flop_history';
+const MAX_HISTORY = 20;
+
+/** 加载最佳记录，若不存在则返回空对象 */
+function loadBestRecords() {
+  try {
+    const raw = localStorage.getItem(STORAGE_BEST);
+    return raw ? JSON.parse(raw) : {};
+  } catch (_) { return {}; }
+}
+
+/** 保存最佳记录 */
+function saveBestRecords(records) {
+  try { localStorage.setItem(STORAGE_BEST, JSON.stringify(records)); } catch (_) {}
+}
+
+/** 加载历史列表 */
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(STORAGE_HISTORY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (_) { return []; }
+}
+
+/** 保存历史列表 */
+function saveHistory(list) {
+  try { localStorage.setItem(STORAGE_HISTORY, JSON.stringify(list)); } catch (_) {}
+}
+
+/**
+ * 检测并更新最佳记录
+ * @param {string} difficulty
+ * @param {number} time  秒
+ * @param {number} steps
+ * @returns {string[]} 被刷新的记录类型: [] / ['time'] / ['steps'] / ['time','steps']
+ */
+function checkAndUpdateRecord(difficulty, time, steps) {
+  const best = loadBestRecords();
+  if (!best[difficulty]) {
+    best[difficulty] = { time: null, steps: null };
+  }
+  const cur = best[difficulty];
+  const recordTypes = [];
+  if (cur.time === null || time < cur.time) {
+    cur.time = time;
+    recordTypes.push('time');
+  }
+  if (cur.steps === null || steps < cur.steps) {
+    cur.steps = steps;
+    recordTypes.push('steps');
+  }
+  saveBestRecords(best);
+  return recordTypes;
+}
+
+/**
+ * 添加一条历史记录
+ * @param {string} difficulty
+ * @param {number} time
+ * @param {number} steps
+ * @param {string[]} recordTypes 本局刷新的纪录类型
+ */
+function addHistoryRecord(difficulty, time, steps, recordTypes) {
+  const list = loadHistory();
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  list.unshift({
+    difficulty,
+    time,
+    steps,
+    date: dateStr,
+    isRecord: recordTypes.length > 0 ? recordTypes : null,
+  });
+  // 保留最近 MAX_HISTORY 条
+  if (list.length > MAX_HISTORY) list.length = MAX_HISTORY;
+  saveHistory(list);
+}
 
 // === DOM 引用 ===
 const boardEl = document.getElementById('board');
@@ -503,6 +915,8 @@ function newGame() {
   document.getElementById('win-overlay').classList.remove('active');
   document.getElementById('share-overlay').classList.remove('active');
   document.body.style.overflow = '';
+  // 重置计时与步数
+  resetTimerAndSteps();
   GAME.cards = createCards();
   GAME.firstCard = null;
   GAME.secondCard = null;
@@ -526,6 +940,8 @@ function handleCardClick(index, cardEl) {
   if (GAME.firstCard === null) {
     // 第一张牌
     GAME.firstCard = index;
+    // 首次翻牌时启动计时器
+    if (!timerInterval) startTimer();
   } else {
     // 第二张牌
     GAME.secondCard = index;
@@ -537,6 +953,8 @@ function handleCardClick(index, cardEl) {
 
 // === 检查匹配 ===
 function checkMatch() {
+  totalSteps++;
+  updateStatsDisplay();
   const first = GAME.cards[GAME.firstCard];
   const second = GAME.cards[GAME.secondCard];
 
@@ -606,6 +1024,9 @@ function checkWin() {
   const allMatched = GAME.cards.every(card => card.matched);
   if (!allMatched) return;
 
+  // 停止计时
+  stopTimer();
+
   // 延迟弹出，让最后两张牌的消除动画播完
   winTimeoutId = setTimeout(() => {
     showWin();
@@ -615,8 +1036,39 @@ function checkWin() {
 // === 显示通关弹窗 ===
 function showWin() {
   const config = DIFFICULTY[GAME.difficulty];
+  const elapsed = getElapsedSeconds();
+
   document.getElementById('win-subtitle').textContent =
     `你成功消除了全部 ${config.pairs} 对卡片！`;
+  // 显示最终用时和步数
+  const mins = Math.floor(elapsed / 60);
+  const secs = elapsed % 60;
+  document.getElementById('win-stats').textContent =
+    `⏱️ ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')} · 👣 ${totalSteps}步`;
+
+  // 检测纪录
+  const recordTypes = checkAndUpdateRecord(GAME.difficulty, elapsed, totalSteps);
+  addHistoryRecord(GAME.difficulty, elapsed, totalSteps, recordTypes);
+
+  // 根据纪录类型切换弹窗 emoji 和标题
+  const emojiEl = document.querySelector('.win-emoji');
+  const titleEl = document.querySelector('.win-title');
+  if (recordTypes.length === 2) {
+    emojiEl.textContent = '🏆';
+    titleEl.textContent = '双料新纪录！';
+  } else if (recordTypes.includes('time')) {
+    emojiEl.textContent = '⏱️';
+    titleEl.textContent = '最快记录！';
+  } else if (recordTypes.includes('steps')) {
+    emojiEl.textContent = '👣';
+    titleEl.textContent = '最少步数！';
+  } else {
+    emojiEl.textContent = '🎉';
+    titleEl.textContent = '恭喜通关！';
+  }
+
+  // 重置隐藏开关为默认不勾选
+  document.getElementById('share-hide-stats').checked = false;
   document.getElementById('win-overlay').classList.add('active');
 }
 
@@ -637,7 +1089,7 @@ function rr(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-function generateShareCard() {
+function generateShareCard(showStats) {
   const canvas = document.createElement('canvas');
   canvas.width = 1200;
   canvas.height = 1600;
@@ -692,7 +1144,7 @@ function generateShareCard() {
   ctx.shadowColor = theme.accentShadow;
   ctx.shadowBlur = 80;
   ctx.shadowOffsetY = 12;
-  rr(ctx, 90, 240, W - 180, H - 600, 56);
+  rr(ctx, 90, 240, W - 180, H - 560, 56);
   ctx.fill();
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;
@@ -731,7 +1183,19 @@ function generateShareCard() {
     `🃏 消除：${config.pairs} 对`,
     `🌸 日系清新风格`,
   ];
-  features.forEach((f, i) => ctx.fillText(f, W / 2, 840 + i * 90));
+  // 根据开关决定是否展示用时和步数
+  if (showStats !== false) {
+    const elapsed = getElapsedSeconds();
+    const fMins = Math.floor(elapsed / 60);
+    const fSecs = elapsed % 60;
+    features.push(`⏱️ 用时：${fMins}:${String(fSecs).padStart(2, '0')}`);
+    features.push(`👣 步数：${totalSteps}步`);
+  }
+  ctx.textAlign = 'left';
+  features.forEach((f, i) => {
+    const textWidth = ctx.measureText(f).width;
+    ctx.fillText(f, (W - textWidth) / 2, 840 + i * 90);
+  });
 
   return canvas;
 }
@@ -811,7 +1275,9 @@ function shareGame() {
   // 先关闭通关弹窗
   document.getElementById('win-overlay').classList.remove('active');
 
-  const canvas = generateShareCard();
+  // 读取"隐藏用时和步数"开关状态
+  const hideStats = document.getElementById('share-hide-stats').checked;
+  const canvas = generateShareCard(!hideStats);
   drawQRAndShow(canvas);
 }
 
@@ -838,6 +1304,84 @@ document.getElementById('btn-share').addEventListener('click', shareGame);
 document.getElementById('share-close').addEventListener('click', hideShareCard);
 document.getElementById('share-overlay').addEventListener('click', function(e) {
   if (e.target === this) hideShareCard();
+});
+
+// === 历史记录面板 ===
+
+/** 格式化秒数为 MM:SS */
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+/** 根据纪录类型返回徽章文字 */
+function getRecordBadge(recordTypes) {
+  if (!recordTypes || recordTypes.length === 0) return '';
+  if (recordTypes.length === 2) return '🏆 双料';
+  if (recordTypes[0] === 'time') return '⏱️ 最快';
+  return '👣 最少';
+}
+
+/** 渲染历史记录面板内容 */
+function renderHistoryPanel() {
+  const bestRecordsEl = document.getElementById('best-records');
+  const historyListEl = document.getElementById('history-list');
+
+  // 渲染最佳记录
+  const best = loadBestRecords();
+  const diffs = ['easy', 'normal', 'hard'];
+  const diffLabels = { easy: '简单', normal: '普通', hard: '困难' };
+  let bestHTML = '';
+  diffs.forEach(d => {
+    const r = best[d];
+    const timeStr = r && r.time !== null ? formatTime(r.time) : '--:--';
+    const stepsStr = r && r.steps !== null ? `${r.steps}步` : '--步';
+    bestHTML += `<div class="best-row">
+      <span class="best-diff">${diffLabels[d]}</span>
+      <span class="best-stat">⏱️ ${timeStr} · 👣 ${stepsStr}</span>
+    </div>`;
+  });
+  bestRecordsEl.innerHTML = bestHTML;
+
+  // 渲染最近游戏历史
+  const history = loadHistory();
+  if (history.length === 0) {
+    historyListEl.innerHTML = '<div class="history-empty">还没有游戏记录，快来玩一局吧</div>';
+  } else {
+    let listHTML = '';
+    history.forEach(h => {
+      const badge = getRecordBadge(h.isRecord);
+      const cls = badge ? 'history-item record' : 'history-item';
+      listHTML += `<div class="${cls}">
+        <span class="history-item-diff">${diffLabels[h.difficulty] || h.difficulty}</span>
+        <span class="history-item-stats">⏱️ ${formatTime(h.time)} · 👣 ${h.steps}步</span>
+        <span class="history-item-date">${h.date}</span>
+        ${badge ? `<span class="record-badge">${badge}</span>` : ''}
+      </div>`;
+    });
+    historyListEl.innerHTML = listHTML;
+  }
+}
+
+/** 打开历史记录面板 */
+function openHistoryPanel() {
+  renderHistoryPanel();
+  document.getElementById('history-overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+/** 关闭历史记录面板 */
+function closeHistoryPanel() {
+  document.getElementById('history-overlay').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+// === 历史记录事件绑定 ===
+document.getElementById('btn-history').addEventListener('click', openHistoryPanel);
+document.getElementById('history-close').addEventListener('click', closeHistoryPanel);
+document.getElementById('history-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeHistoryPanel();
 });
 </script>
 </body>
