@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>翻牌消消乐</title>
+<meta name="api-base" content="https://api.w1lkin.site">
+<script src="https://api.w1lkin.site/sdk.js"></script>
 <style>
 /* === CSS 变量：日系清新主题 === */
 :root {
@@ -639,6 +641,8 @@ body {
 </style>
 </head>
 <body>
+<div id="gp-bar" style="position:fixed;top:0;left:0;right:0;z-index:50;padding:6px 12px;background:rgba(20,24,40,.85)"></div>
+<div id="gp-leaderboard" style="position:fixed;right:8px;bottom:8px;z-index:50;max-width:200px;padding:10px;background:rgba(20,24,40,.9);border-radius:12px"></div>
 <div class="game-container">
   <h1 class="game-title">🍀 翻牌消消乐</h1>
 
@@ -773,36 +777,24 @@ function resetTimerAndSteps() {
   updateStatsDisplay();
 }
 
-// === 本地存储：最佳记录与历史 ===
-const STORAGE_BEST = 'flop_best';
-const STORAGE_HISTORY = 'flop_history';
+// === 最佳记录与历史：云端存储（submitScore / getMyScores）===
 const MAX_HISTORY = 20;
 
-/** 加载最佳记录，若不存在则返回空对象 */
+/** 加载最佳记录（云端模式下本地不再保留，返回空对象；纪录检测仅作提示） */
 function loadBestRecords() {
-  try {
-    const raw = localStorage.getItem(STORAGE_BEST);
-    return raw ? JSON.parse(raw) : {};
-  } catch (_) { return {}; }
+  return {};
 }
 
-/** 保存最佳记录 */
-function saveBestRecords(records) {
-  try { localStorage.setItem(STORAGE_BEST, JSON.stringify(records)); } catch (_) {}
-}
+/** 保存最佳记录 —— 云端由 submitScore 处理，本机不再存 */
+function saveBestRecords(records) { /* cloud-only */ }
 
 /** 加载历史列表 */
 function loadHistory() {
-  try {
-    const raw = localStorage.getItem(STORAGE_HISTORY);
-    return raw ? JSON.parse(raw) : [];
-  } catch (_) { return []; }
+  return []; // 历史改从云端 getMyScores 渲染
 }
 
-/** 保存历史列表 */
-function saveHistory(list) {
-  try { localStorage.setItem(STORAGE_HISTORY, JSON.stringify(list)); } catch (_) {}
-}
+/** 保存历史列表 —— 云端由 submitScore 处理，本机不再存 */
+function saveHistory(list) { /* cloud-only */ }
 
 /**
  * 检测并更新最佳记录
@@ -1049,6 +1041,8 @@ function showWin() {
   // 检测纪录
   const recordTypes = checkAndUpdateRecord(GAME.difficulty, elapsed, totalSteps);
   addHistoryRecord(GAME.difficulty, elapsed, totalSteps, recordTypes);
+  // 战绩上报云端（用时秒数越小越好）
+  try { GamePlatform.submitScore('flop', elapsed, { difficulty: GAME.difficulty, steps: totalSteps }); } catch (e) {}
 
   // 根据纪录类型切换弹窗 emoji 和标题
   const emojiEl = document.querySelector('.win-emoji');
@@ -1236,7 +1230,13 @@ document.getElementById('btn-replay').addEventListener('click', () => {
 });
 
 // === 启动游戏 ===
-newGame();
+// === 启动游戏（硬登录门：未登录不能玩）===
+GamePlatform.init();
+GamePlatform.mountGate({ gameId: 'flop' }).then(() => {
+  GamePlatform.mountBar(document.getElementById('gp-bar'), { gameId: 'flop' });
+  GamePlatform.mountLeaderboard(document.getElementById('gp-leaderboard'), { gameId: 'flop' });
+  newGame();
+});
 
 // === 分享功能 ===
 
@@ -1324,19 +1324,29 @@ function getRecordBadge(recordTypes) {
 }
 
 /** 渲染历史记录面板内容 */
-function renderHistoryPanel() {
+async function renderHistoryPanel() {
   const bestRecordsEl = document.getElementById('best-records');
   const historyListEl = document.getElementById('history-list');
+  if (!bestRecordsEl || !historyListEl) return;
 
-  // 渲染最佳记录
-  const best = loadBestRecords();
   const diffs = ['easy', 'normal', 'hard'];
   const diffLabels = { easy: '简单', normal: '普通', hard: '困难' };
+
+  let items = [];
+  try { items = await GamePlatform.getMyScores('flop', 20); } catch (e) { items = []; }
+
+  // 由云端战绩推导每难度最佳（用时最小）
+  const best = {};
+  items.forEach((it) => {
+    const d = it.meta && it.meta.difficulty;
+    if (!d) return;
+    if (!best[d] || it.score < best[d].time) best[d] = { time: it.score, steps: (it.meta && it.meta.steps) || null };
+  });
   let bestHTML = '';
   diffs.forEach(d => {
     const r = best[d];
-    const timeStr = r && r.time !== null ? formatTime(r.time) : '--:--';
-    const stepsStr = r && r.steps !== null ? `${r.steps}步` : '--步';
+    const timeStr = r ? formatTime(r.time) : '--:--';
+    const stepsStr = r && r.steps != null ? `${r.steps}步` : '--步';
     bestHTML += `<div class="best-row">
       <span class="best-diff">${diffLabels[d]}</span>
       <span class="best-stat">⏱️ ${timeStr} · 👣 ${stepsStr}</span>
@@ -1344,20 +1354,16 @@ function renderHistoryPanel() {
   });
   bestRecordsEl.innerHTML = bestHTML;
 
-  // 渲染最近游戏历史
-  const history = loadHistory();
-  if (history.length === 0) {
+  if (items.length === 0) {
     historyListEl.innerHTML = '<div class="history-empty">还没有游戏记录，快来玩一局吧</div>';
   } else {
     let listHTML = '';
-    history.forEach(h => {
-      const badge = getRecordBadge(h.isRecord);
-      const cls = badge ? 'history-item record' : 'history-item';
-      listHTML += `<div class="${cls}">
-        <span class="history-item-diff">${diffLabels[h.difficulty] || h.difficulty}</span>
-        <span class="history-item-stats">⏱️ ${formatTime(h.time)} · 👣 ${h.steps}步</span>
-        <span class="history-item-date">${h.date}</span>
-        ${badge ? `<span class="record-badge">${badge}</span>` : ''}
+    items.forEach(it => {
+      const d = (it.meta && it.meta.difficulty) || '';
+      const steps = it.meta && it.meta.steps != null ? it.meta.steps : '--';
+      listHTML += `<div class="history-item">
+        <span class="history-item-diff">${diffLabels[d] || d}</span>
+        <span class="history-item-stats">⏱️ ${formatTime(it.score)} · 👣 ${steps}步</span>
       </div>`;
     });
     historyListEl.innerHTML = listHTML;
