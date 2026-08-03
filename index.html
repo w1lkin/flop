@@ -641,8 +641,7 @@ body {
 </style>
 </head>
 <body>
-<div id="gp-bar" style="position:fixed;top:0;left:0;right:0;z-index:50;padding:6px 12px;background:rgba(20,24,40,.85)"></div>
-<div id="gp-leaderboard" style="position:fixed;right:8px;bottom:8px;z-index:50;max-width:200px;padding:10px;background:rgba(20,24,40,.9);border-radius:12px"></div>
+
 <div class="game-container">
   <h1 class="game-title">🍀 翻牌消消乐</h1>
 
@@ -1233,8 +1232,6 @@ document.getElementById('btn-replay').addEventListener('click', () => {
 // === 启动游戏（硬登录门：未登录不能玩）===
 GamePlatform.init();
 GamePlatform.mountGate({ gameId: 'flop' }).then(() => {
-  GamePlatform.mountBar(document.getElementById('gp-bar'), { gameId: 'flop' });
-  GamePlatform.mountLeaderboard(document.getElementById('gp-leaderboard'), { gameId: 'flop' });
   newGame();
 });
 
