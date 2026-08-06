@@ -1041,7 +1041,7 @@ function showWin() {
   const recordTypes = checkAndUpdateRecord(GAME.difficulty, elapsed, totalSteps);
   addHistoryRecord(GAME.difficulty, elapsed, totalSteps, recordTypes);
   // 战绩上报云端（用时秒数越小越好）
-  try { GamePlatform.submitScore('flop', elapsed, { difficulty: GAME.difficulty, steps: totalSteps }); } catch (e) {}
+  GamePlatform.submitScore('flop', elapsed, { difficulty: GAME.difficulty, steps: totalSteps }).catch(() => {});
 
   // 根据纪录类型切换弹窗 emoji 和标题
   const emojiEl = document.querySelector('.win-emoji');
