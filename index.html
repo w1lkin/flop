@@ -647,7 +647,7 @@ body {
 
   <div class="difficulty-bar" id="difficulty-bar">
     <button class="diff-btn" data-diff="easy">简单</button>
-    <button class="diff-btn active" data-diff="normal">普通</button>
+    <button class="diff-btn active" data-diff="medium">普通</button>
     <button class="diff-btn" data-diff="hard">困难</button>
   </div>
 
@@ -710,7 +710,7 @@ const SHARE_URL = 'https://flop-39t.pages.dev/'; // 部署后填写实际 URL
 
 const DIFFICULTY = {
   easy:   { label: '简单', cols: 4, rows: 4, pairs: 8 },
-  normal: { label: '普通', cols: 6, rows: 4, pairs: 12 },
+  medium: { label: '普通', cols: 6, rows: 4, pairs: 12 },
   hard:   { label: '困难', cols: 6, rows: 6, pairs: 18 },
 };
 
@@ -725,7 +725,7 @@ let matchTimeoutId = null;
 let winTimeoutId = null;
 
 const GAME = {
-  difficulty: 'normal',
+  difficulty: 'medium',
   cards: [],       // { emoji: string, flipped: boolean, matched: boolean }
   firstCard: null, // 索引
   secondCard: null,
@@ -1326,8 +1326,8 @@ async function renderHistoryPanel() {
   const historyListEl = document.getElementById('history-list');
   if (!bestRecordsEl || !historyListEl) return;
 
-  const diffs = ['easy', 'normal', 'hard'];
-  const diffLabels = { easy: '简单', normal: '普通', hard: '困难' };
+  const diffs = ['easy', 'medium', 'hard'];
+  const diffLabels = { easy: '简单', medium: '普通', hard: '困难' };
 
   let items = [];
   try { items = await GamePlatform.getMyScores('flop', 20); } catch (e) { items = []; }
